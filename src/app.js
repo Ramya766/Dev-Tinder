@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-app.use("/user",(req,res,next)=>{
+app.use("/user",[(req,res,next)=>{
   const response="Ram"; //doubt
   console.log("response1");
   
@@ -11,7 +11,7 @@ app.use("/user",(req,res,next)=>{
   console.log("response2");
   res.send("response2");
  
-})
+}]);
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
