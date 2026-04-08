@@ -1,15 +1,14 @@
 const express = require("express");
 const app = express();
-//authorize logic for all admin requests
-const auth=require("./middlewares/auth");
-app.use("/admin",auth);
-app.get("/admin/getData", (req, res) => {
-  res.send("All User Data");
+app.get("/user", (req, res) => {
+  //throw new Error("djbjld;fkn ls"); //creating error for testing
+  res.send("User Data!!");
 });
-app.get("/admin/delete", (req, res) => {
-  res.send("User Deleted!!");
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Internal Server Error: ");
+  }
 });
-
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
