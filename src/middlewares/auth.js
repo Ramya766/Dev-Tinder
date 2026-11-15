@@ -1,11 +1,25 @@
-const auth= (req, res, next) => {
-  console.log("Auth called!!");
-  const token = "xyz123";
-  const auth = token === "xyz123";
-  if (!auth) {
-    res.status(401).send("Unauthorized user!");
-  } else {
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+
+const userAuth = async(req,res,next)=>{
+  try{
+    const {token} = req.cookies;
+    if(!token){
+      throw new Error("No token found");
+    }
+    const decoded = await jwt.verify(token, "RAMYA$$BILLINOR");
+    console.log(decoded);
+    const {id} = decoded;
+    const user = await User.findById(id);
+    if(!user){
+      throw new Error("User not found");
+    }
+    req.user = user;
     next();
+
+  }catch(err){
+    res.status(401).send("ERROR: " + err.message);
   }
-};
-module.exports=auth;
+}
+
+module.exports= {userAuth};

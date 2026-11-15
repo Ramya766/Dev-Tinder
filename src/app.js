@@ -1,37 +1,73 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const connectDB = require("./Config/database");
 const User = require("./models/user");
+const {userAuth } = require("./middlewares/auth");
+//authentication
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
+//password hashing
+const bcrypt = require("bcrypt");
+
+//middleware
 const app = express();
 app.use(express.json());
-app.get("/user", async (req, res) => {
+app.use(cookieParser());
+
+app.post("/signup", async (req, res) => {
   try {
-    const users = await User.findOne({ emailId: req.body.emailId });
-    if (!users) {
-      res.status(404).send("User not found!!");
+    const { firstName, lastName, emailId, password } = req.body;
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
+
+    await user.save();
+
+    res.send("User registered successfully");
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    const isPasswordValid = user.validatePassword(password);
+    if (isPasswordValid) {
+      //create a jwt token
+      const token = await user.getJWT();
+      console.log(token);
+      //add the token to the cookie and send it to the user
+      res.cookie("token", token);
+      res.send("Login successful");
     } else {
-      res.send(users);
+      throw new Error("Invalid Credentials");
     }
   } catch (err) {
-    res.status(400).send("Something went worng!!");
+    res.status(500).send("Error: " + err.message);
   }
 });
-app.get("/feed", async (req, res) => {
+
+app.get("/profile",userAuth, async (req, res) => {
   try {
-    const users = await User.find({});
-    res.send(users);
+    res.send(req.user);
   } catch (err) {
-    res.status(400).send("Something went worng!!");
+    res.status(500).send("Error: " + err.message);
   }
 });
-app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
-  try {
-    await user.save();
-    res.send("User created successfully");
-  } catch (err) {
-    res.status(400).send("Error saving data" + err.message);
-  }
-});
+
+
 connectDB()
   .then(() => {
     console.log("Database connected successfully");
