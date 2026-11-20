@@ -89,6 +89,8 @@ userSchema.methods.validatePassword = async function (passwordInputByUser) {
   return isPasswordValid;
 }
 
+userSchema.index({firstName:1,lastName:1});
+
 
 
 //const Usermodel = mongoose.model("User",userSchema);

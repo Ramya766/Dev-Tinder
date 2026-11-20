@@ -8,7 +8,7 @@ const userAuth = async(req,res,next)=>{
       throw new Error("No token found");
     }
     const decoded = await jwt.verify(token, "RAMYA$$BILLINOR");
-    console.log(decoded);
+    //console.log(decoded);
     const {id} = decoded;
     const user = await User.findById(id);
     if(!user){
