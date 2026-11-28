@@ -29,9 +29,18 @@ UserRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
-    }).populate("fromUserId", SAFEDATA);
-    const data = connectionRequests.map((row) => row.fromUserId);
-    res.json({data});
+    })
+      .populate("fromUserId", SAFEDATA)
+      .populate("toUserId", SAFEDATA);
+      console.log(connectionRequests);
+    const data = connectionRequests.map((row) => {
+      if(row.fromUserId._id.toString()=== loggedInUser._id.toString()){
+        //we fixed the bug
+        return row.toUserId;
+      }
+      return row.fromUserId;
+    });
+    res.json({ data });
   } catch (err) {
     return res.status(400).json({ message: "Error: " + err.message });
   }
